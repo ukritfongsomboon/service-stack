@@ -178,7 +178,7 @@ services:
     ports:
       - "${PROMETHEUS_PORT}:9090"
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./configs/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./data/prometheus:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -261,7 +261,7 @@ services:
       GF_INSTALL_PLUGINS: "grafana-piechart-panel"
     volumes:
       - ./data/grafana:/var/lib/grafana
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./configs/monitoring/grafana/provisioning:/etc/grafana/provisioning
     depends_on:
       - prometheus
     networks:
