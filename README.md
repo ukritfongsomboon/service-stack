@@ -44,10 +44,10 @@ A comprehensive Docker Compose setup for running multiple backend services with 
 | **Adminer** | `ukritstack_adminer` | 8080 | `http://localhost:8080` | admin / postgres_password123 |
 | **MinIO** | `ukritstack_minio` | 9000, 9001 | API: `http://localhost:9000` Console: `http://localhost:9001` | minioadmin / minio_password123 |
 
-## 📊 Monitoring Stack
+## 📊 แสดงผลการตรวจสอบ (Monitoring Stack)
 
-| Service | Container Name | Port | Access |
-|---------|----------------|------|--------|
+| บริการ | ชื่อคอนเทนเนอร์ | พอร์ต | การเข้าถึง |
+|--------|-----------------|-------|-----------|
 | **Prometheus** | `ukritstack_prometheus` | 9090 | `http://localhost:9090` |
 | **Grafana** | `ukritstack_grafana` | 3000 | `http://localhost:3000` |
 | **cAdvisor** | `ukritstack_cadvisor` | 8082 | `http://localhost:8082` |
@@ -56,41 +56,41 @@ A comprehensive Docker Compose setup for running multiple backend services with 
 | **PostgreSQL Exporter** | `ukritstack_postgres_exporter` | 9187 | `http://localhost:9187` |
 | **Redis Exporter** | `ukritstack_redis_exporter` | 9121 | `http://localhost:9121` |
 
-### Grafana Access
+### การเข้าถึง Grafana
 ```
 URL: http://localhost:3000
-Username: admin
-Password: admin123
+ชื่อผู้ใช้: admin
+รหัสผ่าน: admin123
 ```
 
-### Available Dashboards
-1. **Overview Dashboard** - System metrics, container status, uptime (days/hours/minutes/seconds)
-2. **MinIO Dashboard** - Object storage metrics (CPU, Memory, Network, Errors, Latency)
+### แดชบอร์ดที่มีให้ใช้งาน
+1. **Overview Dashboard** - เมตริกระบบ, สถานะคอนเทนเนอร์, เวลาทำงาน (วัน/ชั่วโมง/นาที/วินาที)
+2. **MinIO Dashboard** - เมตริกการจัดเก็บข้อมูล (CPU, Memory, Network, Errors, Latency)
 
-### Core Metrics Monitored
-- **System**: CPU Usage, Memory, Disk Space, Uptime
-- **Network**: Bandwidth, Traffic per Container
-- **Containers**: CPU, Memory, Network per Container
-- **Storage**: MinIO health, request rates, errors
-- **Performance**: Latency, request throughput
+### เมตริกพื้นฐานที่ตรวจสอบ
+- **ระบบ**: การใช้งาน CPU, หน่วยความจำ, พื้นที่ดิสก์, เวลาทำงาน
+- **เครือข่าย**: แบนด์วิดท์, ปริมาณการไป่อ่อต่อคอนเทนเนอร์
+- **คอนเทนเนอร์**: CPU, หน่วยความจำ, เครือข่ายต่อคอนเทนเนอร์
+- **พื้นที่เก็บข้อมูล**: สถานะความเป็นปกติของ MinIO, อัตราการร้องขอ, ข้อผิดพลาด
+- **ประสิทธิภาพ**: ความล่าช้า, ปริมาณการร้องขอ
 
-### Accessing Monitoring Services
+### การเข้าถึงบริการการตรวจสอบ
 
 #### Prometheus
 ```bash
 # URL
 http://localhost:9090
 
-# Features
-- Metrics storage and querying
-- Alert rule management
-- Service discovery
-- Historical data retention (30 days)
+# คุณสมบัติ
+- การเก็บข้อมูลเมตริกและการค้นหา
+- การจัดการกฎการแจ้งเตือน
+- การค้นพบบริการ
+- การเก็บข้อมูลในอดีต (30 วัน)
 
-# Example queries:
-node_cpu_seconds_total              # Host CPU metrics
-container_memory_usage_bytes        # Container memory
-container_network_receive_bytes_total # Network traffic
+# ตัวอย่างการสอบถาม:
+node_cpu_seconds_total              # เมตริก CPU ของโฮสต์
+container_memory_usage_bytes        # หน่วยความจำของคอนเทนเนอร์
+container_network_receive_bytes_total # ปริมาณการไป่อ่อเครือข่าย
 ```
 
 #### Grafana
@@ -98,40 +98,40 @@ container_network_receive_bytes_total # Network traffic
 # URL
 http://localhost:3000
 
-# Default Login
-Username: admin
-Password: admin123
+# การเข้าสู่ระบบเริ่มต้น
+ชื่อผู้ใช้: admin
+รหัสผ่าน: admin123
 
-# Available Dashboards:
+# แดชบอร์ดที่มีให้ใช้งาน:
 1. UkritStack Overview
-   - System health status
-   - CPU, Memory, Disk usage
-   - Network traffic
-   - Container metrics
-   - Uptime (Days, Hours, Minutes, Seconds)
+   - สถานะความเป็นปกติของระบบ
+   - การใช้งาน CPU, Memory, Disk
+   - ปริมาณการไป่อ่อเครือข่าย
+   - เมตริกคอนเทนเนอร์
+   - เวลาทำงาน (วัน, ชั่วโมง, นาที, วินาที)
 
-2. MinIO - Object Storage Monitoring
-   - Storage usage (Total, Used, Free)
-   - Storage percentage
-   - S3 request rates
-   - Error rates (4xx, 5xx)
-   - Request latency
-   - Network bandwidth
+2. MinIO - การตรวจสอบพื้นที่เก็บข้อมูล
+   - การใช้พื้นที่เก็บข้อมูล (ทั้งหมด, ใช้แล้ว, ว่าง)
+   - เปอร์เซ็นต์พื้นที่เก็บข้อมูล
+   - อัตราการร้องขอ S3
+   - อัตราข้อผิดพลาด (4xx, 5xx)
+   - ความล่าช้าของการร้องขอ
+   - แบนด์วิดท์เครือข่าย
 ```
 
-#### Prometheus Scrape Configuration
-Configured targets in `monitoring/prometheus.yml`:
-- **prometheus** - Prometheus self-monitoring
-- **mongodb** - MongoDB metrics via exporter
-- **postgresql** - PostgreSQL metrics via exporter
-- **redis** - Redis metrics via exporter
-- **cadvisor** - Container metrics (CPU, Memory, Network)
-- **node** - Host machine metrics
-- **minio** - MinIO storage metrics (if exporter enabled)
+#### การตั้งค่าการสกัด Prometheus
+เป้าหมายที่กำหนดค่าไว้ใน `monitoring/prometheus.yml`:
+- **prometheus** - การตรวจสอบตัวเอง Prometheus
+- **mongodb** - เมตริก MongoDB ผ่าน exporter
+- **postgresql** - เมตริก PostgreSQL ผ่าน exporter
+- **redis** - เมตริก Redis ผ่าน exporter
+- **cadvisor** - เมตริกคอนเทนเนอร์ (CPU, Memory, Network)
+- **node** - เมตริกเครื่องโฮสต์
+- **minio** - เมตริกการจัดเก็บข้อมูล MinIO (หากเปิดใช้งาน exporter)
 
-### Setting Up Custom Alerts
+### การตั้งค่าการแจ้งเตือนแบบกำหนดเอง
 
-Edit `monitoring/prometheus.yml` to add alert rules:
+แก้ไข `monitoring/prometheus.yml` เพื่อเพิ่มกฎการแจ้งเตือน:
 ```yaml
 groups:
   - name: service_alerts
@@ -140,69 +140,69 @@ groups:
         expr: rate(container_cpu_usage_seconds_total[5m]) > 0.8
         for: 5m
         annotations:
-          summary: "High CPU usage detected"
+          summary: "ตรวจพบการใช้งาน CPU สูง"
 ```
 
-### Exporter Configuration Details
+### รายละเอียดการตั้งค่า Exporter
 
 #### MongoDB Exporter
-- **Port**: 9216
-- **Query**: Connects to `mongodb:27017` with admin credentials
-- **Metrics**: Database operations, connections, storage
+- **พอร์ต**: 9216
+- **การเชื่อมต่อ**: เชื่อมต่อไปยัง `mongodb:27017` ด้วยข้อมูลรับรอง admin
+- **เมตริก**: การดำเนินการในฐานข้อมูล, การเชื่อมต่อ, การจัดเก็บข้อมูล
 
 #### PostgreSQL Exporter
-- **Port**: 9187
-- **Query**: Connects to `postgres:5432`
-- **Metrics**: Database size, query performance, connections
+- **พอร์ต**: 9187
+- **การเชื่อมต่อ**: เชื่อมต่อไปยัง `postgres:5432`
+- **เมตริก**: ขนาดฐานข้อมูล, ประสิทธิภาพการค้นหา, การเชื่อมต่อ
 
 #### Redis Exporter
-- **Port**: 9121
-- **Query**: Connects to `redis:6379` with password
-- **Metrics**: Memory usage, keys, operations
+- **พอร์ต**: 9121
+- **การเชื่อมต่อ**: เชื่อมต่อไปยัง `redis:6379` ด้วยรหัสผ่าน
+- **เมตริก**: การใช้หน่วยความจำ, คีย์, การดำเนินการ
 
 #### Node Exporter
-- **Port**: 9100
-- **Metrics**: Host CPU, Memory, Disk, Network
-- **Coverage**: System-wide metrics
+- **พอร์ต**: 9100
+- **เมตริก**: CPU โฮสต์, หน่วยความจำ, ดิสก์, เครือข่าย
+- **ความครอบคลุม**: เมตริกทั่วทั้งระบบ
 
 #### cAdvisor
-- **Port**: 8082
-- **Metrics**: Container-level CPU, Memory, Network, I/O
-- **Note**: Provides real-time container metrics
+- **พอร์ต**: 8082
+- **เมตริก**: CPU, หน่วยความจำ, เครือข่าย, I/O ระดับคอนเทนเนอร์
+- **หมายเหตุ**: ให้เมตริกคอนเทนเนอร์แบบเรียลไทม์
 
-### Viewing Metrics History
+### การดูประวัติเมตริก
 
-1. **Short-term trends** (last hour):
-   - Use Grafana with default time range
-   - Reload dashboard to see latest updates
+1. **แนวโน้มระยะสั้น** (ชั่วโมงที่แล้ว):
+   - ใช้ Grafana พร้อมช่วงเวลาเริ่มต้น
+   - โหลดแดชบอร์ดใหม่เพื่อดูการอัปเดตล่าสุด
 
-2. **Historical analysis** (last 30 days):
-   - Prometheus retains data for 30 days
-   - Use Prometheus UI to query historical data
-   - Export data for analysis
+2. **การวิเคราะห์ในอดีต** (30 วันที่แล้ว):
+   - Prometheus เก็บข้อมูลไว้ 30 วัน
+   - ใช้ Prometheus UI เพื่อค้นหาข้อมูลในอดีต
+   - ส่งออกข้อมูลเพื่อการวิเคราะห์
 
-3. **Export Metrics**:
+3. **ส่งออกเมตริก**:
 ```bash
-# Export from Prometheus API
+# ส่งออกจาก Prometheus API
 curl 'http://localhost:9090/api/v1/query_range?query=container_cpu_usage_seconds_total&start=2025-12-01T00:00:00Z&end=2025-12-02T00:00:00Z&step=60s'
 ```
 
-### Performance Tips
+### คำแนะนำประสิทธิภาพ
 
-1. **Grafana Dashboard Performance**:
-   - Reduce query time range for faster loads
-   - Use aggregation queries for better performance
-   - Limit the number of time-series on a panel
+1. **ประสิทธิภาพของแดชบอร์ด Grafana**:
+   - ลดช่วงเวลาการค้นหาเพื่อให้โหลดเร็วขึ้น
+   - ใช้การสอบถามการรวมข้อมูล (aggregation) เพื่อประสิทธิภาพที่ดีขึ้น
+   - จำกัดจำนวนของชุดข้อมูลเวลา (time-series) ในแผง
 
-2. **Prometheus Query Optimization**:
-   - Use rate() for counters
-   - Use specific label matchers
-   - Avoid too many cardinality metrics
+2. **การเพิ่มประสิทธิภาพของการสอบถาม Prometheus**:
+   - ใช้ rate() สำหรับตัวนับ (counters)
+   - ใช้เครื่องหมายการจับคู่เฉพาะ (label matchers)
+   - หลีกเลี่ยงเมตริกด้วยค่า cardinality สูง
 
-3. **Storage Management**:
-   - Prometheus retention is set to 30 days
-   - Adjust `PROMETHEUS_RETENTION` in .env if needed
-   - Monitor disk space: `df -h ./data/prometheus`
+3. **การจัดการพื้นที่เก็บข้อมูล**:
+   - การเก็บข้อมูลของ Prometheus ถูกตั้งค่าเป็น 30 วัน
+   - ปรับ `PROMETHEUS_RETENTION` ใน .env หากจำเป็น
+   - ตรวจสอบพื้นที่ดิสก์: `df -h ./data/prometheus`
 
 ## 🔐 Configuration
 
