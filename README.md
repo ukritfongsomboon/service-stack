@@ -74,6 +74,136 @@ Password: admin123
 - **Storage**: MinIO health, request rates, errors
 - **Performance**: Latency, request throughput
 
+### Accessing Monitoring Services
+
+#### Prometheus
+```bash
+# URL
+http://localhost:9090
+
+# Features
+- Metrics storage and querying
+- Alert rule management
+- Service discovery
+- Historical data retention (30 days)
+
+# Example queries:
+node_cpu_seconds_total              # Host CPU metrics
+container_memory_usage_bytes        # Container memory
+container_network_receive_bytes_total # Network traffic
+```
+
+#### Grafana
+```bash
+# URL
+http://localhost:3000
+
+# Default Login
+Username: admin
+Password: admin123
+
+# Available Dashboards:
+1. UkritStack Overview
+   - System health status
+   - CPU, Memory, Disk usage
+   - Network traffic
+   - Container metrics
+   - Uptime (Days, Hours, Minutes, Seconds)
+
+2. MinIO - Object Storage Monitoring
+   - Storage usage (Total, Used, Free)
+   - Storage percentage
+   - S3 request rates
+   - Error rates (4xx, 5xx)
+   - Request latency
+   - Network bandwidth
+```
+
+#### Prometheus Scrape Configuration
+Configured targets in `monitoring/prometheus.yml`:
+- **prometheus** - Prometheus self-monitoring
+- **mongodb** - MongoDB metrics via exporter
+- **postgresql** - PostgreSQL metrics via exporter
+- **redis** - Redis metrics via exporter
+- **cadvisor** - Container metrics (CPU, Memory, Network)
+- **node** - Host machine metrics
+- **minio** - MinIO storage metrics (if exporter enabled)
+
+### Setting Up Custom Alerts
+
+Edit `monitoring/prometheus.yml` to add alert rules:
+```yaml
+groups:
+  - name: service_alerts
+    rules:
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total[5m]) > 0.8
+        for: 5m
+        annotations:
+          summary: "High CPU usage detected"
+```
+
+### Exporter Configuration Details
+
+#### MongoDB Exporter
+- **Port**: 9216
+- **Query**: Connects to `mongodb:27017` with admin credentials
+- **Metrics**: Database operations, connections, storage
+
+#### PostgreSQL Exporter
+- **Port**: 9187
+- **Query**: Connects to `postgres:5432`
+- **Metrics**: Database size, query performance, connections
+
+#### Redis Exporter
+- **Port**: 9121
+- **Query**: Connects to `redis:6379` with password
+- **Metrics**: Memory usage, keys, operations
+
+#### Node Exporter
+- **Port**: 9100
+- **Metrics**: Host CPU, Memory, Disk, Network
+- **Coverage**: System-wide metrics
+
+#### cAdvisor
+- **Port**: 8082
+- **Metrics**: Container-level CPU, Memory, Network, I/O
+- **Note**: Provides real-time container metrics
+
+### Viewing Metrics History
+
+1. **Short-term trends** (last hour):
+   - Use Grafana with default time range
+   - Reload dashboard to see latest updates
+
+2. **Historical analysis** (last 30 days):
+   - Prometheus retains data for 30 days
+   - Use Prometheus UI to query historical data
+   - Export data for analysis
+
+3. **Export Metrics**:
+```bash
+# Export from Prometheus API
+curl 'http://localhost:9090/api/v1/query_range?query=container_cpu_usage_seconds_total&start=2025-12-01T00:00:00Z&end=2025-12-02T00:00:00Z&step=60s'
+```
+
+### Performance Tips
+
+1. **Grafana Dashboard Performance**:
+   - Reduce query time range for faster loads
+   - Use aggregation queries for better performance
+   - Limit the number of time-series on a panel
+
+2. **Prometheus Query Optimization**:
+   - Use rate() for counters
+   - Use specific label matchers
+   - Avoid too many cardinality metrics
+
+3. **Storage Management**:
+   - Prometheus retention is set to 30 days
+   - Adjust `PROMETHEUS_RETENTION` in .env if needed
+   - Monitor disk space: `df -h ./data/prometheus`
+
 ## 🔐 Configuration
 
 All configuration is stored in `.env` file. Edit values as needed:
