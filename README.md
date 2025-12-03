@@ -44,6 +44,36 @@ A comprehensive Docker Compose setup for running multiple backend services with 
 | **Adminer** | `ukritstack_adminer` | 8080 | `http://localhost:8080` | admin / postgres_password123 |
 | **MinIO** | `ukritstack_minio` | 9000, 9001 | API: `http://localhost:9000` Console: `http://localhost:9001` | minioadmin / minio_password123 |
 
+## 📊 Monitoring Stack
+
+| Service | Container Name | Port | Access |
+|---------|----------------|------|--------|
+| **Prometheus** | `ukritstack_prometheus` | 9090 | `http://localhost:9090` |
+| **Grafana** | `ukritstack_grafana` | 3000 | `http://localhost:3000` |
+| **cAdvisor** | `ukritstack_cadvisor` | 8082 | `http://localhost:8082` |
+| **Node Exporter** | `ukritstack_node_exporter` | 9100 | `http://localhost:9100` |
+| **MongoDB Exporter** | `ukritstack_mongodb_exporter` | 9216 | `http://localhost:9216` |
+| **PostgreSQL Exporter** | `ukritstack_postgres_exporter` | 9187 | `http://localhost:9187` |
+| **Redis Exporter** | `ukritstack_redis_exporter` | 9121 | `http://localhost:9121` |
+
+### Grafana Access
+```
+URL: http://localhost:3000
+Username: admin
+Password: admin123
+```
+
+### Available Dashboards
+1. **Overview Dashboard** - System metrics, container status, uptime (days/hours/minutes/seconds)
+2. **MinIO Dashboard** - Object storage metrics (CPU, Memory, Network, Errors, Latency)
+
+### Core Metrics Monitored
+- **System**: CPU Usage, Memory, Disk Space, Uptime
+- **Network**: Bandwidth, Traffic per Container
+- **Containers**: CPU, Memory, Network per Container
+- **Storage**: MinIO health, request rates, errors
+- **Performance**: Latency, request throughput
+
 ## 🔐 Configuration
 
 All configuration is stored in `.env` file. Edit values as needed:
