@@ -1,0 +1,75 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'ukritstack-monitoring'
+
+scrape_configs:
+  # ============================================================================
+  # PROMETHEUS SELF-MONITORING
+  # ============================================================================
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # ============================================================================
+  # MONGODB METRICS
+  # ============================================================================
+  - job_name: 'mongodb'
+    static_configs:
+      - targets: ['mongodb-exporter:9216']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'mongodb:27017'
+
+  # ============================================================================
+  # POSTGRESQL METRICS
+  # ============================================================================
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'postgres:5432'
+
+  # ============================================================================
+  # REDIS METRICS
+  # ============================================================================
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'redis:6379'
+
+  # ============================================================================
+  # MINIO METRICS
+  # ============================================================================
+  - job_name: 'minio'
+    static_configs:
+      - targets: ['minio-exporter:9290']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'minio:9000'
+
+  # ============================================================================
+  # HOST MACHINE METRICS (Node Exporter)
+  # ============================================================================
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'localhost'
+
+  # ============================================================================
+  # DOCKER CONTAINER METRICS (cAdvisor)
+  # ============================================================================
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']

@@ -1,0 +1,330 @@
+##############################################################################
+# UkritStack - Multi-Service Docker Compose Configuration
+#
+# Services organized by type:
+# 1. Document Database: MongoDB + Mongo Express (UI)
+# 2. In-Memory Cache: Redis + Redis Insight (UI)
+# 3. Relational Database: PostgreSQL + Adminer (UI)
+# 4. Object Storage: MinIO (with Web Console)
+#
+# All services are connected via a shared network and data is persisted
+# using Docker volumes. Configuration is loaded from .env file.
+##############################################################################
+
+services:
+
+  # ============================================================================
+  # 🍃 MONGODB - Document Database
+  # ============================================================================
+  mongodb:
+    image: mongo:${MONGO_VERSION}
+    container_name: ukritstack_mongodb
+    ports:
+      - "${MONGO_PORT}:27017"
+    environment:
+      # MongoDB admin credentials
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    volumes:
+      # Data persistence (local bind mount)
+      - ./data/mongodb/db:/data/db
+      # Configuration persistence (local bind mount)
+      - ./data/mongodb/config:/data/configdb
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
+  # 📊 MONGO EXPRESS - Web UI for MongoDB
+  mongo-express:
+    image: mongo-express:${MONGO_EXPRESS_VERSION}
+    container_name: ukritstack_mongo_express
+    ports:
+      - "${MONGO_EXPRESS_PORT}:8081"
+    environment:
+      # MongoDB connection
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/
+      # Mongo Express credentials
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USERNAME}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
+    depends_on:
+      - mongodb
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
+  # ============================================================================
+  # 🔴 REDIS - In-Memory Cache Database
+  # ============================================================================
+  redis:
+    image: redis:${REDIS_VERSION}
+    container_name: ukritstack_redis
+    ports:
+      - "${REDIS_PORT}:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      # Data persistence (AOF and RDB) (local bind mount)
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
+  # 📊 REDIS INSIGHT - Web UI for Redis
+  redis-insight:
+    image: redislabs/redisinsight:${REDIS_INSIGHT_VERSION}
+    container_name: ukritstack_redis_insight
+    ports:
+      - "${REDIS_INSIGHT_PORT}:5540"
+    environment:
+      # Auto-configure Redis connection
+      REDIS_HOSTS: local:redis:${REDIS_PORT}:0:${REDIS_PASSWORD}
+    depends_on:
+      - redis
+    volumes:
+      # Persistence for insights data (local bind mount)
+      - ./data/redis-insight:/data
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
+  # ============================================================================
+  # 🐘 POSTGRESQL - Relational Database
+  # ============================================================================
+  postgres:
+    image: postgres:${POSTGRES_VERSION}
+    container_name: ukritstack_postgres
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    environment:
+      # PostgreSQL credentials and database
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      # Database data persistence (local bind mount)
+      - ./data/postgresql:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
+  # 📊 ADMINER - Web UI for PostgreSQL and other databases
+  adminer:
+    image: adminer:${ADMINER_VERSION}
+    container_name: ukritstack_adminer
+    ports:
+      - "${ADMINER_PORT}:8080"
+    environment:
+      # Default database server
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      - postgres
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
+  # ============================================================================
+  # 🏪 MINIO - Object Storage (S3-compatible)
+  # ============================================================================
+  minio:
+    image: minio/minio:${MINIO_VERSION}
+    container_name: ukritstack_minio
+    ports:
+      # API port for S3 operations
+      - "${MINIO_PORT}:9000"
+      # Web Console port for management
+      - "${MINIO_CONSOLE_PORT}:9001"
+    environment:
+      # MinIO root credentials
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      # Data persistence for objects (local bind mount)
+      - ./data/minio:/minio/data
+    command: server /minio/data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
+  # ============================================================================
+  # 📊 MONITORING STACK
+  # ============================================================================
+
+  # 📈 PROMETHEUS - Metrics Collection and Storage
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_VERSION}
+    container_name: ukritstack_prometheus
+    ports:
+      - "${PROMETHEUS_PORT}:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./data/prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION}'
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
+  # 📊 MONGODB EXPORTER - Monitors MongoDB metrics
+  mongodb-exporter:
+    image: ${MONGODB_EXPORTER_IMAGE}
+    container_name: ukritstack_mongodb_exporter
+    ports:
+      - "${MONGODB_EXPORTER_PORT}:9216"
+    environment:
+      MONGODB_URI: "mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/admin?ssl=false"
+    depends_on:
+      - mongodb
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
+  # 🐘 POSTGRESQL EXPORTER - Monitors PostgreSQL metrics
+  postgres-exporter:
+    image: ${POSTGRES_EXPORTER_IMAGE}
+    container_name: ukritstack_postgres_exporter
+    ports:
+      - "${POSTGRES_EXPORTER_PORT}:9187"
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable"
+    depends_on:
+      - postgres
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
+  # 🔴 REDIS EXPORTER - Monitors Redis metrics
+  redis-exporter:
+    image: ${REDIS_EXPORTER_IMAGE}
+    container_name: ukritstack_redis_exporter
+    ports:
+      - "${REDIS_EXPORTER_PORT}:9121"
+    environment:
+      REDIS_ADDR: "redis://:${REDIS_PASSWORD}@redis:6379"
+    command:
+      - "--redis.addr=redis://:${REDIS_PASSWORD}@redis:6379"
+    depends_on:
+      - redis
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
+  # 🏪 MINIO EXPORTER - Monitors MinIO metrics
+  minio-exporter:
+    image: ${MINIO_EXPORTER_IMAGE}
+    container_name: ukritstack_minio_exporter
+    ports:
+      - "${MINIO_EXPORTER_PORT}:9290"
+    environment:
+      MINIO_ENDPOINT: "http://minio:9000"
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_USE_SSL: "false"
+    depends_on:
+      - minio
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
+  # 📊 GRAFANA - Metrics Visualization and Dashboards
+  grafana:
+    image: grafana/grafana:${GRAFANA_VERSION}
+    container_name: ukritstack_grafana
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER}
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel"
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
+  # 🖥️ NODE EXPORTER - Host Machine Metrics
+  node-exporter:
+    image: ${NODE_EXPORTER_IMAGE}
+    container_name: ukritstack_node_exporter
+    ports:
+      - "${NODE_EXPORTER_PORT}:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
+  # 🐳 CADVISOR - Docker Container Metrics
+  cadvisor:
+    image: ${CADVISOR_IMAGE}
+    container_name: ukritstack_cadvisor
+    ports:
+      - "${CADVISOR_PORT}:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
+# ============================================================================
+# 📦 VOLUMES - Data Persistence Configuration
+# ============================================================================
+# Note: All volumes are configured as bind mounts pointing to ./data directory
+# in the current working directory. This allows easy access to data files and
+# makes it simple to backup or migrate data.
+#
+# Directory structure:
+# ./data/
+# ├── mongodb/
+# │   ├── db/          (MongoDB data files)
+# │   └── config/      (MongoDB configuration)
+# ├── redis/           (Redis data files)
+# ├── redis-insight/   (Redis Insight data)
+# ├── postgresql/      (PostgreSQL data)
+# └── minio/           (MinIO object storage)
+#
+# volumes:
+  # Note: Volumes are defined but not used since we're using bind mounts
+  # This section is kept for documentation purposes
+
+# ============================================================================
+# 🌐 NETWORKS - Inter-service Communication
+# ============================================================================
+networks:
+  ukritstack_network:
+    driver: bridge
