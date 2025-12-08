@@ -1,6 +1,6 @@
 # UkritStack 🚀
 
-A comprehensive Docker Compose setup for running multiple backend services with a single command. Includes MongoDB, Redis, PostgreSQL, MinIO with web UI management tools: Mongo Express, Redis Insight, and Adminer.
+A comprehensive Docker Compose setup for running multiple backend services with a single command. Includes MongoDB, Redis, PostgreSQL, MinIO, Centrifugo with web UI management tools: Mongo Express, Redis Insight, and Adminer. Also includes comprehensive monitoring stack with Prometheus and Grafana.
 
 ## 📋 Prerequisites
 
@@ -43,6 +43,7 @@ A comprehensive Docker Compose setup for running multiple backend services with 
 | **PostgreSQL** | `ukritstack_postgres` | 5432 | `postgresql://admin:postgres_password123@localhost:5432/ukritstack_db` | admin / postgres_password123 |
 | **Adminer** | `ukritstack_adminer` | 8080 | `http://localhost:8080` | admin / postgres_password123 |
 | **MinIO** | `ukritstack_minio` | 9000, 9001 | API: `http://localhost:9000` Console: `http://localhost:9001` | minioadmin / minio_password123 |
+| **Centrifugo** | `ukritstack_centrifugo` | 8000 | `http://localhost:8000` | (configured via config.json) |
 
 ## 📊 แสดงผลการตรวจสอบ (Monitoring Stack)
 
@@ -248,6 +249,9 @@ REDIS_INSIGHT_PORT=5540
 # Adminer Configuration
 ADMINER_VERSION=latest
 ADMINER_PORT=8080
+
+# Centrifugo Configuration
+CENTRIFUGO_PORT=8000
 ```
 
 ## 🧪 Available Scripts
@@ -286,8 +290,11 @@ Tests connectivity and health of all services with detailed status report.
 - ✅ MongoDB connection
 - ✅ Mongo Express availability
 - ✅ Redis connection
+- ✅ Redis Insight availability
 - ✅ PostgreSQL connection
+- ✅ Adminer availability
 - ✅ MinIO health check
+- ✅ Centrifugo health check
 
 **Features:**
 - Container status overview
@@ -376,6 +383,28 @@ psql -h localhost -U admin -d ukritstack_db
 # http://localhost:9000
 ```
 
+### Centrifugo
+```bash
+# Access Web UI and Admin Panel
+# http://localhost:8000
+
+# Features:
+# - Real-time WebSocket messaging server
+# - Pub/Sub functionality
+# - Connection management
+# - Channel subscriptions
+# - Admin API and Web interface
+
+# Configuration
+# Configuration is stored in: ./configs/centrifugo/config.json
+#
+# Example client connection (JavaScript):
+# const centrifuge = new Centrifuge('ws://localhost:8000/connection/websocket');
+# centrifuge.connect();
+#
+# For more details, visit: https://centrifugal.dev/
+```
+
 ## 📊 Common Docker Commands
 
 ### View container status
@@ -396,6 +425,7 @@ docker-compose logs -f redis-insight
 docker-compose logs -f postgres
 docker-compose logs -f adminer
 docker-compose logs -f minio
+docker-compose logs -f centrifugo
 ```
 
 ### Execute commands in containers
@@ -408,6 +438,9 @@ docker exec -it ukritstack_redis redis-cli ping
 
 # PostgreSQL
 docker exec -it ukritstack_postgres psql -U admin -d ukritstack_db -c "SELECT NOW();"
+
+# Centrifugo
+docker exec -it ukritstack_centrifugo centrifugo version
 ```
 
 ### Stop specific service
@@ -417,6 +450,7 @@ docker-compose stop redis
 docker-compose stop postgres
 docker-compose stop minio
 docker-compose stop mongo-express
+docker-compose stop centrifugo
 ```
 
 ### Remove everything (containers + volumes)
@@ -502,8 +536,9 @@ lsof -i :6379   # Redis
 lsof -i :5540   # Redis Insight
 lsof -i :5432   # PostgreSQL
 lsof -i :8080   # Adminer
-lsof -i :9000   # MinIO
+lsof -i :9000   # MinIO API
 lsof -i :9001   # MinIO Console
+lsof -i :8000   # Centrifugo
 
 # View error logs
 docker-compose logs <service-name>
@@ -580,7 +615,10 @@ docker-compose --env-file .env.production up -d
 - [Redis Documentation](https://redis.io/documentation)
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [MinIO Documentation](https://docs.min.io/)
+- [Centrifugo Documentation](https://centrifugal.dev/)
 - [Mongo Express Documentation](https://github.com/mongo-express/mongo-express)
+- [Prometheus Documentation](https://prometheus.io/docs/)
+- [Grafana Documentation](https://grafana.com/docs/)
 
 ## 🤝 Contributing
 
@@ -592,6 +630,6 @@ This project is provided as-is for development purposes.
 
 ---
 
-**Last Updated:** 2025-12-03
+**Last Updated:** 2025-12-08
 
 **Happy Coding!** 🎉
