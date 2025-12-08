@@ -17,28 +17,12 @@ if ! command -v docker-compose &> /dev/null; then
     exit 1
 fi
 
-# Ask user if they want to remove volumes
-echo -e "${YELLOW}Do you want to remove volumes as well? (y/n)${NC}"
-read -r response
-
-if [[ "$response" == "y" || "$response" == "Y" ]]; then
-    echo -e "${YELLOW}🗑️  Stopping containers and removing volumes...${NC}\n"
-    docker-compose down -v
-    REMOVE_VOLUMES=true
-else
-    echo -e "${YELLOW}🛑 Stopping containers (keeping volumes)...${NC}\n"
-    docker-compose down
-    REMOVE_VOLUMES=false
-fi
+echo -e "${YELLOW}🛑 Stopping containers (keeping volumes)...${NC}\n"
+docker-compose down
 
 if [ $? -eq 0 ]; then
     echo -e "\n${GREEN}✅ All containers stopped successfully${NC}\n"
-
-    if [ "$REMOVE_VOLUMES" = true ]; then
-        echo -e "${GREEN}✅ Volumes removed${NC}\n"
-    else
-        echo -e "${YELLOW}💾 Volumes preserved (data persisted)${NC}\n"
-    fi
+    echo -e "${YELLOW}💾 Volumes preserved (data persisted)${NC}\n"
 
     echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
     echo -e "${BLUE}  Final Status${NC}"

@@ -167,18 +167,46 @@ services:
       - ukritstack_network
     restart: unless-stopped
 
+    # ============================================================================
+  # 🔄 CENTRIFUGO - Real-time Messaging Server
+  # ============================================================================
+  centrifugo:
+    image: centrifugo/centrifugo:${CENTRIFUGO_VERSION}
+    container_name: ukritstack_centrifugo
+    ports:
+      - "${CENTRIFUGO_PORT}:8000"
+    volumes:
+      - ./configs/centrifugo/config.json:/centrifugo/config.json
+    command: centrifugo -c config.json
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ukritstack_network
+    restart: unless-stopped
+
   # ============================================================================
   # 📊 MONITORING STACK
   # ============================================================================
+  # สำหรับ Prometheus, Grafana, Alertmanager
 
+  # ============================================================================
   # 📈 PROMETHEUS - Metrics Collection and Storage
+  # ============================================================================
   prometheus:
     image: prom/prometheus:${PROMETHEUS_VERSION}
     container_name: ukritstack_prometheus
     ports:
       - "${PROMETHEUS_PORT}:9090"
+
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./configs/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./data/prometheus:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -188,7 +216,9 @@ services:
       - ukritstack_network
     restart: unless-stopped
 
+  # ============================================================================
   # 📊 MONGODB EXPORTER - Monitors MongoDB metrics
+  # ============================================================================
   mongodb-exporter:
     image: ${MONGODB_EXPORTER_IMAGE}
     container_name: ukritstack_mongodb_exporter
@@ -202,7 +232,9 @@ services:
       - ukritstack_network
     restart: unless-stopped
 
+  # ============================================================================
   # 🐘 POSTGRESQL EXPORTER - Monitors PostgreSQL metrics
+  # ============================================================================
   postgres-exporter:
     image: ${POSTGRES_EXPORTER_IMAGE}
     container_name: ukritstack_postgres_exporter
@@ -216,7 +248,9 @@ services:
       - ukritstack_network
     restart: unless-stopped
 
+  # ============================================================================
   # 🔴 REDIS EXPORTER - Monitors Redis metrics
+  # ============================================================================
   redis-exporter:
     image: ${REDIS_EXPORTER_IMAGE}
     container_name: ukritstack_redis_exporter
@@ -232,7 +266,9 @@ services:
       - ukritstack_network
     restart: unless-stopped
 
+  # ============================================================================
   # 🏪 MINIO EXPORTER - Monitors MinIO metrics
+  # ============================================================================
   minio-exporter:
     image: ${MINIO_EXPORTER_IMAGE}
     container_name: ukritstack_minio_exporter
@@ -249,7 +285,9 @@ services:
       - ukritstack_network
     restart: unless-stopped
 
+  # ============================================================================
   # 📊 GRAFANA - Metrics Visualization and Dashboards
+  # ============================================================================
   grafana:
     image: grafana/grafana:${GRAFANA_VERSION}
     container_name: ukritstack_grafana
@@ -261,14 +299,16 @@ services:
       GF_INSTALL_PLUGINS: "grafana-piechart-panel"
     volumes:
       - ./data/grafana:/var/lib/grafana
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./configs/monitoring/grafana/provisioning:/etc/grafana/provisioning
     depends_on:
       - prometheus
     networks:
       - ukritstack_network
     restart: unless-stopped
 
+# ============================================================================
   # 🖥️ NODE EXPORTER - Host Machine Metrics
+  # ============================================================================
   node-exporter:
     image: ${NODE_EXPORTER_IMAGE}
     container_name: ukritstack_node_exporter
@@ -285,8 +325,12 @@ services:
     networks:
       - ukritstack_network
     restart: unless-stopped
+  
+  
 
+# ============================================================================
   # 🐳 CADVISOR - Docker Container Metrics
+  # ============================================================================
   cadvisor:
     image: ${CADVISOR_IMAGE}
     container_name: ukritstack_cadvisor

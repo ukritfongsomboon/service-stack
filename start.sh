@@ -9,7 +9,7 @@ PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
 
 # Available services
-SERVICES=("mongodb" "mongo-express" "redis" "redis-insight" "postgres" "adminer" "minio" "prometheus" "grafana" "mongodb-exporter" "postgres-exporter" "redis-exporter" "minio-exporter" "node-exporter" "cadvisor")
+SERVICES=("centrifugo" "mongodb" "mongo-express" "redis" "redis-insight" "postgres" "adminer" "minio" "prometheus" "grafana" "mongodb-exporter" "postgres-exporter" "redis-exporter" "minio-exporter" "node-exporter" "cadvisor")
 SELECTED_SERVICES=()
 
 # Function to show help
@@ -44,6 +44,7 @@ ${YELLOW}Available Services:${NC}
   • postgres          (Relational Database)
   • adminer           (PostgreSQL Web UI)
   • minio             (Object Storage)
+  • centrifugo        (Real-time Messaging Server)
 
   ${BLUE}Monitoring Stack:${NC}
   • prometheus        (Metrics Collection)
@@ -280,6 +281,9 @@ if [ $? -eq 0 ]; then
                 ;;
             cadvisor)
                 echo -e "${GREEN}cAdvisor${NC}          : http://localhost:${CADVISOR_PORT}"
+                ;;
+            centrifugo)
+                echo -e "${GREEN}Centrifugo${NC}        : http://localhost:${CENTRIFUGO_PORT:-8000}"
                 ;;
         esac
     done

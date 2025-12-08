@@ -113,6 +113,19 @@ test_adminer() {
     fi
 }
 
+# Function to test Centrifugo
+test_centrifugo() {
+    echo -e "${YELLOW}Testing Centrifugo...${NC}"
+
+    if curl -s http://localhost:${CENTRIFUGO_PORT:-8000}/health &> /dev/null; then
+        echo -e "${GREEN}✅ Centrifugo is running and responding${NC}\n"
+        ((TESTS_PASSED++))
+    else
+        echo -e "${RED}❌ Centrifugo is not responding${NC}\n"
+        ((TESTS_FAILED++))
+    fi
+}
+
 # Function to check container status
 check_container_status() {
     echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
@@ -137,6 +150,7 @@ show_endpoints() {
     echo -e "${GREEN}Adminer${NC}           : http://localhost:${ADMINER_PORT}"
     echo -e "${GREEN}MinIO API${NC}         : http://localhost:${MINIO_PORT}"
     echo -e "${GREEN}MinIO Console${NC}     : http://localhost:${MINIO_CONSOLE_PORT}"
+    echo -e "${GREEN}Centrifugo${NC}        : http://localhost:${CENTRIFUGO_PORT:-8000}"
     echo
 }
 
@@ -173,6 +187,10 @@ show_logs() {
     echo -e "${YELLOW}MinIO Logs:${NC}"
     docker-compose logs --tail=3 minio
     echo
+
+    echo -e "${YELLOW}Centrifugo Logs:${NC}"
+    docker-compose logs --tail=3 centrifugo
+    echo
 }
 
 # Run all tests
@@ -184,6 +202,7 @@ test_redis_insight
 test_postgres
 test_adminer
 test_minio
+test_centrifugo
 
 # Show endpoints
 show_endpoints
