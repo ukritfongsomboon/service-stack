@@ -1,6 +1,6 @@
 # UkritStack 🚀
 
-A comprehensive Docker Compose setup for running multiple backend services with a single command. Includes MongoDB, Redis, PostgreSQL, MinIO, Centrifugo with web UI management tools: Mongo Express, Redis Insight, and Adminer. Also includes comprehensive monitoring stack with Prometheus and Grafana.
+A comprehensive Docker Compose stack for running multiple backend services with monitoring. Includes databases (MongoDB, Redis, PostgreSQL), storage (MinIO), real-time messaging (Centrifugo), web UIs, and complete monitoring stack (Prometheus + Grafana).
 
 ## 📋 Prerequisites
 
@@ -9,495 +9,318 @@ A comprehensive Docker Compose setup for running multiple backend services with 
 - 4GB RAM minimum
 - curl (for health checks)
 
-## 🔧 Quick Start
+## 🚀 Quick Start
 
-### 1. Initialize Data Directories (First time only)
 ```bash
-./init-data-dirs.sh
-```
-
-### 2. Start All Services
-```bash
+# 1. Start all services
 ./start.sh
-```
-**Note:** The `start.sh` script will automatically initialize data directories if they don't exist.
 
-### 3. Test Services
-```bash
+# 2. Test services health
 ./test.sh
-```
 
-### 4. Stop Services
-```bash
+# 3. Stop services (data preserved)
 ./stop.sh
 ```
 
-## 📦 Services Included
+**Note:** Data directories are automatically initialized on first start.
 
-| Service | Container Name | Port | Access | Credentials |
-|---------|----------------|------|--------|-------------|
-| **MongoDB** | `ukritstack_mongodb` | 27017 | `mongodb://admin:password123@localhost:27017/` | admin / password123 |
-| **Mongo Express** | `ukritstack_mongo_express` | 8081 | `http://localhost:8081` | admin / admin123 |
-| **Redis** | `ukritstack_redis` | 6379 | `redis://localhost:6379` | (password: redis_password123) |
-| **Redis Insight** | `ukritstack_redis_insight` | 5540 | `http://localhost:5540` | (auto-configured) |
-| **PostgreSQL** | `ukritstack_postgres` | 5432 | `postgresql://admin:postgres_password123@localhost:5432/ukritstack_db` | admin / postgres_password123 |
-| **Adminer** | `ukritstack_adminer` | 8080 | `http://localhost:8080` | admin / postgres_password123 |
-| **MinIO** | `ukritstack_minio` | 9000, 9001 | API: `http://localhost:9000` Console: `http://localhost:9001` | minioadmin / minio_password123 |
-| **Centrifugo** | `ukritstack_centrifugo` | 8000 | `http://localhost:8000` | (configured via config.json) |
+## 📊 Services & Port Assignments
 
-## 📊 แสดงผลการตรวจสอบ (Monitoring Stack)
+All services use ports **18801-18817** for easy management and no standard port conflicts.
 
-| บริการ | ชื่อคอนเทนเนอร์ | พอร์ต | การเข้าถึง |
-|--------|-----------------|-------|-----------|
-| **Prometheus** | `ukritstack_prometheus` | 9090 | `http://localhost:9090` |
-| **Grafana** | `ukritstack_grafana` | 3000 | `http://localhost:3000` |
-| **cAdvisor** | `ukritstack_cadvisor` | 8082 | `http://localhost:8082` |
-| **Node Exporter** | `ukritstack_node_exporter` | 9100 | `http://localhost:9100` |
-| **MongoDB Exporter** | `ukritstack_mongodb_exporter` | 9216 | `http://localhost:9216` |
-| **PostgreSQL Exporter** | `ukritstack_postgres_exporter` | 9187 | `http://localhost:9187` |
-| **Redis Exporter** | `ukritstack_redis_exporter` | 9121 | `http://localhost:9121` |
+### 🗄️ Database Services
 
-### การเข้าถึง Grafana
-```
-URL: http://localhost:3000
-ชื่อผู้ใช้: admin
-รหัสผ่าน: admin123
-```
+| Service | Port | Access | Credentials | Description |
+|---------|------|--------|-------------|-------------|
+| MongoDB | **18801** | `mongodb://admin:password123@localhost:18801/` | admin / password123 | Document Database |
+| Mongo Express | **18802** | `http://localhost:18802` | admin / admin123 | MongoDB Web UI |
+| Redis | **18803** | `redis://localhost:18803` | password: redis_password123 | In-Memory Cache |
+| Redis Insight | **18804** | `http://localhost:18804` | (auto-configured) | Redis Web UI |
+| PostgreSQL | **18805** | `postgresql://admin:postgres_password123@localhost:18805/ukritstack_db` | admin / postgres_password123 | Relational Database |
+| Adminer | **18806** | `http://localhost:18806` | admin / postgres_password123 | PostgreSQL Web UI |
 
-### แดชบอร์ดที่มีให้ใช้งาน
-1. **Overview Dashboard** - เมตริกระบบ, สถานะคอนเทนเนอร์, เวลาทำงาน (วัน/ชั่วโมง/นาที/วินาที)
-2. **MinIO Dashboard** - เมตริกการจัดเก็บข้อมูล (CPU, Memory, Network, Errors, Latency)
+### 🏪 Storage Services
 
-### เมตริกพื้นฐานที่ตรวจสอบ
-- **ระบบ**: การใช้งาน CPU, หน่วยความจำ, พื้นที่ดิสก์, เวลาทำงาน
-- **เครือข่าย**: แบนด์วิดท์, ปริมาณการไป่อ่อต่อคอนเทนเนอร์
-- **คอนเทนเนอร์**: CPU, หน่วยความจำ, เครือข่ายต่อคอนเทนเนอร์
-- **พื้นที่เก็บข้อมูล**: สถานะความเป็นปกติของ MinIO, อัตราการร้องขอ, ข้อผิดพลาด
-- **ประสิทธิภาพ**: ความล่าช้า, ปริมาณการร้องขอ
+| Service | Port | Access | Credentials | Description |
+|---------|------|--------|-------------|-------------|
+| MinIO API | **18807** | `http://localhost:18807` | minioadmin / minio_password123 | Object Storage API |
+| MinIO Console | **18808** | `http://localhost:18808` | minioadmin / minio_password123 | MinIO Web Console |
 
-### การเข้าถึงบริการการตรวจสอบ
+### 🔄 Real-time Services
 
-#### Prometheus
-```bash
-# URL
-http://localhost:9090
+| Service | Port | Access | Credentials | Description |
+|---------|------|--------|-------------|-------------|
+| Centrifugo | **18809** | `http://localhost:18809` | (configured via .env) | WebSocket Messaging |
 
-# คุณสมบัติ
-- การเก็บข้อมูลเมตริกและการค้นหา
-- การจัดการกฎการแจ้งเตือน
-- การค้นพบบริการ
-- การเก็บข้อมูลในอดีต (30 วัน)
+### 📊 Monitoring Stack
 
-# ตัวอย่างการสอบถาม:
-node_cpu_seconds_total              # เมตริก CPU ของโฮสต์
-container_memory_usage_bytes        # หน่วยความจำของคอนเทนเนอร์
-container_network_receive_bytes_total # ปริมาณการไป่อ่อเครือข่าย
-```
+| Service | Port | Access | Credentials | Description |
+|---------|------|--------|-------------|-------------|
+| Prometheus | **18810** | `http://localhost:18810` | (no authentication) | Metrics Collection |
+| Grafana | **18811** | `http://localhost:18811` | admin / admin123 | Metrics Visualization |
 
-#### Grafana
-```bash
-# URL
-http://localhost:3000
+### 📈 Metrics Exporters
 
-# การเข้าสู่ระบบเริ่มต้น
-ชื่อผู้ใช้: admin
-รหัสผ่าน: admin123
+| Service | Port | Access | Credentials | Description |
+|---------|------|--------|-------------|-------------|
+| MongoDB Exporter | **18812** | `http://localhost:18812/metrics` | (no authentication) | MongoDB Metrics |
+| PostgreSQL Exporter | **18813** | `http://localhost:18813/metrics` | (no authentication) | PostgreSQL Metrics |
+| Redis Exporter | **18814** | `http://localhost:18814/metrics` | (no authentication) | Redis Metrics |
+| MinIO Exporter | **18815** | `http://localhost:18815/metrics` | (no authentication) | MinIO Metrics |
+| Node Exporter | **18816** | `http://localhost:18816/metrics` | (no authentication) | Host Metrics |
+| cAdvisor | **18817** | `http://localhost:18817` | (no authentication) | Container Metrics |
 
-# แดชบอร์ดที่มีให้ใช้งาน:
-1. UkritStack Overview
-   - สถานะความเป็นปกติของระบบ
-   - การใช้งาน CPU, Memory, Disk
-   - ปริมาณการไป่อ่อเครือข่าย
-   - เมตริกคอนเทนเนอร์
-   - เวลาทำงาน (วัน, ชั่วโมง, นาที, วินาที)
+## 🔧 Configuration
 
-2. MinIO - การตรวจสอบพื้นที่เก็บข้อมูล
-   - การใช้พื้นที่เก็บข้อมูล (ทั้งหมด, ใช้แล้ว, ว่าง)
-   - เปอร์เซ็นต์พื้นที่เก็บข้อมูล
-   - อัตราการร้องขอ S3
-   - อัตราข้อผิดพลาด (4xx, 5xx)
-   - ความล่าช้าของการร้องขอ
-   - แบนด์วิดท์เครือข่าย
-```
-
-#### การตั้งค่าการสกัด Prometheus
-เป้าหมายที่กำหนดค่าไว้ใน `monitoring/prometheus.yml`:
-- **prometheus** - การตรวจสอบตัวเอง Prometheus
-- **mongodb** - เมตริก MongoDB ผ่าน exporter
-- **postgresql** - เมตริก PostgreSQL ผ่าน exporter
-- **redis** - เมตริก Redis ผ่าน exporter
-- **cadvisor** - เมตริกคอนเทนเนอร์ (CPU, Memory, Network)
-- **node** - เมตริกเครื่องโฮสต์
-- **minio** - เมตริกการจัดเก็บข้อมูล MinIO (หากเปิดใช้งาน exporter)
-
-### การตั้งค่าการแจ้งเตือนแบบกำหนดเอง
-
-แก้ไข `monitoring/prometheus.yml` เพื่อเพิ่มกฎการแจ้งเตือน:
-```yaml
-groups:
-  - name: service_alerts
-    rules:
-      - alert: HighCPUUsage
-        expr: rate(container_cpu_usage_seconds_total[5m]) > 0.8
-        for: 5m
-        annotations:
-          summary: "ตรวจพบการใช้งาน CPU สูง"
-```
-
-### รายละเอียดการตั้งค่า Exporter
-
-#### MongoDB Exporter
-- **พอร์ต**: 9216
-- **การเชื่อมต่อ**: เชื่อมต่อไปยัง `mongodb:27017` ด้วยข้อมูลรับรอง admin
-- **เมตริก**: การดำเนินการในฐานข้อมูล, การเชื่อมต่อ, การจัดเก็บข้อมูล
-
-#### PostgreSQL Exporter
-- **พอร์ต**: 9187
-- **การเชื่อมต่อ**: เชื่อมต่อไปยัง `postgres:5432`
-- **เมตริก**: ขนาดฐานข้อมูล, ประสิทธิภาพการค้นหา, การเชื่อมต่อ
-
-#### Redis Exporter
-- **พอร์ต**: 9121
-- **การเชื่อมต่อ**: เชื่อมต่อไปยัง `redis:6379` ด้วยรหัสผ่าน
-- **เมตริก**: การใช้หน่วยความจำ, คีย์, การดำเนินการ
-
-#### Node Exporter
-- **พอร์ต**: 9100
-- **เมตริก**: CPU โฮสต์, หน่วยความจำ, ดิสก์, เครือข่าย
-- **ความครอบคลุม**: เมตริกทั่วทั้งระบบ
-
-#### cAdvisor
-- **พอร์ต**: 8082
-- **เมตริก**: CPU, หน่วยความจำ, เครือข่าย, I/O ระดับคอนเทนเนอร์
-- **หมายเหตุ**: ให้เมตริกคอนเทนเนอร์แบบเรียลไทม์
-
-### การดูประวัติเมตริก
-
-1. **แนวโน้มระยะสั้น** (ชั่วโมงที่แล้ว):
-   - ใช้ Grafana พร้อมช่วงเวลาเริ่มต้น
-   - โหลดแดชบอร์ดใหม่เพื่อดูการอัปเดตล่าสุด
-
-2. **การวิเคราะห์ในอดีต** (30 วันที่แล้ว):
-   - Prometheus เก็บข้อมูลไว้ 30 วัน
-   - ใช้ Prometheus UI เพื่อค้นหาข้อมูลในอดีต
-   - ส่งออกข้อมูลเพื่อการวิเคราะห์
-
-3. **ส่งออกเมตริก**:
-```bash
-# ส่งออกจาก Prometheus API
-curl 'http://localhost:9090/api/v1/query_range?query=container_cpu_usage_seconds_total&start=2025-12-01T00:00:00Z&end=2025-12-02T00:00:00Z&step=60s'
-```
-
-### คำแนะนำประสิทธิภาพ
-
-1. **ประสิทธิภาพของแดชบอร์ด Grafana**:
-   - ลดช่วงเวลาการค้นหาเพื่อให้โหลดเร็วขึ้น
-   - ใช้การสอบถามการรวมข้อมูล (aggregation) เพื่อประสิทธิภาพที่ดีขึ้น
-   - จำกัดจำนวนของชุดข้อมูลเวลา (time-series) ในแผง
-
-2. **การเพิ่มประสิทธิภาพของการสอบถาม Prometheus**:
-   - ใช้ rate() สำหรับตัวนับ (counters)
-   - ใช้เครื่องหมายการจับคู่เฉพาะ (label matchers)
-   - หลีกเลี่ยงเมตริกด้วยค่า cardinality สูง
-
-3. **การจัดการพื้นที่เก็บข้อมูล**:
-   - การเก็บข้อมูลของ Prometheus ถูกตั้งค่าเป็น 30 วัน
-   - ปรับ `PROMETHEUS_RETENTION` ใน .env หากจำเป็น
-   - ตรวจสอบพื้นที่ดิสก์: `df -h ./data/prometheus`
-
-## 🔐 Configuration
-
-All configuration is stored in `.env` file. Edit values as needed:
+Configuration is managed through `.env` file. Copy the configuration below to your `.env` file:
 
 ```env
-# MongoDB Configuration
+# ============================================================================
+# 🚀 UKRITSTACK ENVIRONMENT CONFIGURATION
+# ============================================================================
+# This file contains all environment variables for UkritStack services.
+# Edit values as needed for your development environment.
+# ⚠️  WARNING: Change all default passwords before using in production!
+# ============================================================================
+
+# ============================================================================
+# 🗄️ DATABASE SERVICES
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# MongoDB - Document Database
+# ----------------------------------------------------------------------------
 MONGO_VERSION=7.0
-MONGO_PORT=27017
+MONGO_PORT=18801
 MONGO_INITDB_ROOT_USERNAME=admin
 MONGO_INITDB_ROOT_PASSWORD=password123
 MONGO_DATABASE=ukritstack
 
-# Redis Configuration
+# ----------------------------------------------------------------------------
+# Redis - In-Memory Cache Database
+# ----------------------------------------------------------------------------
 REDIS_VERSION=7-alpine
-REDIS_PORT=6379
+REDIS_PORT=18803
 REDIS_PASSWORD=redis_password123
 
-# PostgreSQL Configuration
+# ----------------------------------------------------------------------------
+# PostgreSQL - Relational Database
+# ----------------------------------------------------------------------------
 POSTGRES_VERSION=15-alpine
-POSTGRES_PORT=5432
+POSTGRES_PORT=18805
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=postgres_password123
 POSTGRES_DB=ukritstack_db
 
-# MinIO Configuration
-MINIO_VERSION=latest
-MINIO_PORT=9000
-MINIO_CONSOLE_PORT=9001
-MINIO_ROOT_USER=minioadmin
-MINIO_ROOT_PASSWORD=minio_password123
+# ============================================================================
+# 🎨 DATABASE UI MANAGEMENT TOOLS
+# ============================================================================
 
-# Mongo Express Configuration
+# ----------------------------------------------------------------------------
+# Mongo Express - MongoDB Web UI
+# ----------------------------------------------------------------------------
 MONGO_EXPRESS_VERSION=latest
-MONGO_EXPRESS_PORT=8081
+MONGO_EXPRESS_PORT=18802
 MONGO_EXPRESS_USERNAME=admin
 MONGO_EXPRESS_PASSWORD=admin123
 
-# Redis Insight Configuration
+# ----------------------------------------------------------------------------
+# Redis Insight - Redis Web UI
+# ----------------------------------------------------------------------------
 REDIS_INSIGHT_VERSION=latest
-REDIS_INSIGHT_PORT=5540
+REDIS_INSIGHT_PORT=18804
 
-# Adminer Configuration
+# ----------------------------------------------------------------------------
+# Adminer - PostgreSQL Web UI (Multi-Database Support)
+# ----------------------------------------------------------------------------
 ADMINER_VERSION=latest
-ADMINER_PORT=8080
+ADMINER_PORT=18806
 
-# Centrifugo Configuration
-CENTRIFUGO_PORT=8000
+# ============================================================================
+# 🏪 STORAGE SERVICES
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# MinIO - Object Storage (S3-Compatible)
+# ----------------------------------------------------------------------------
+MINIO_VERSION=latest
+MINIO_PORT=18807
+MINIO_CONSOLE_PORT=18808
+MINIO_ROOT_USER=minioadmin
+MINIO_ROOT_PASSWORD=minio_password123
+
+# ============================================================================
+# 🔄 REAL-TIME SERVICES
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Centrifugo - Real-Time WebSocket Messaging Server
+# ----------------------------------------------------------------------------
+CENTRIFUGO_VERSION=v6
+CENTRIFUGO_PORT=18809
+
+# Token HMAC secret key (used for JWT token validation)
+# ⚠️  Change this to a secure random string in production!
+CENTRIFUGO_TOKEN_HMAC_SECRET_KEY=bbe7d157-a253-4094-9759-06a8236543f9
+
+# API key for server-to-server communication
+# ⚠️  Change this to a secure random string in production!
+CENTRIFUGO_API_KEY=d7627bb6-2292-4911-82e1-615c0ed3eebb
+
+# Admin panel configuration
+CENTRIFUGO_ADMIN=true
+CENTRIFUGO_ADMIN_PASSWORD=d0683813-0916-4c49-979f-0e08a686b727
+CENTRIFUGO_ADMIN_SECRET=4e9eafcf-0120-4ddd-b668-8dc40072c78e
+
+# Allowed origins for CORS (comma-separated, empty = allow all)
+CENTRIFUGO_ALLOWED_ORIGINS=
+
+# ============================================================================
+# 📊 MONITORING STACK
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Prometheus - Metrics Collection and Storage
+# ----------------------------------------------------------------------------
+PROMETHEUS_VERSION=latest
+PROMETHEUS_PORT=18810
+PROMETHEUS_RETENTION=30d
+
+# ----------------------------------------------------------------------------
+# Grafana - Metrics Visualization and Dashboards
+# ----------------------------------------------------------------------------
+GRAFANA_VERSION=latest
+GRAFANA_PORT=18811
+GRAFANA_USER=admin
+GRAFANA_PASSWORD=admin123
+
+# ============================================================================
+# 📈 METRICS EXPORTERS
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# MongoDB Exporter - Monitors MongoDB Metrics
+# ----------------------------------------------------------------------------
+MONGODB_EXPORTER_IMAGE=percona/mongodb_exporter:0.47.2
+MONGODB_EXPORTER_PORT=18812
+
+# ----------------------------------------------------------------------------
+# PostgreSQL Exporter - Monitors PostgreSQL Metrics
+# ----------------------------------------------------------------------------
+POSTGRES_EXPORTER_IMAGE=prometheuscommunity/postgres-exporter:latest
+POSTGRES_EXPORTER_PORT=18813
+
+# ----------------------------------------------------------------------------
+# Redis Exporter - Monitors Redis Metrics
+# ----------------------------------------------------------------------------
+REDIS_EXPORTER_IMAGE=oliver006/redis_exporter:latest
+REDIS_EXPORTER_PORT=18814
+
+# ----------------------------------------------------------------------------
+# MinIO Exporter - Monitors MinIO Metrics
+# ----------------------------------------------------------------------------
+MINIO_EXPORTER_IMAGE=joepll/minio-exporter:latest
+MINIO_EXPORTER_PORT=18815
+
+# ----------------------------------------------------------------------------
+# Node Exporter - Host Machine Metrics (CPU, Memory, Disk)
+# ----------------------------------------------------------------------------
+NODE_EXPORTER_IMAGE=prom/node-exporter:latest
+NODE_EXPORTER_PORT=18816
+
+# ----------------------------------------------------------------------------
+# cAdvisor - Docker Container Metrics
+# ----------------------------------------------------------------------------
+CADVISOR_IMAGE=gcr.io/cadvisor/cadvisor:latest
+CADVISOR_PORT=18817
+
+# ============================================================================
+# END OF CONFIGURATION
+# ============================================================================
 ```
+
+**Security:** Default credentials are for development only. Change all passwords in `.env` for production use.
 
 ## 🧪 Available Scripts
 
-### `start.sh` - Start Services
-Starts all Docker containers and displays service endpoints.
-
+### Start Services
 ```bash
-./start.sh
+./start.sh                      # Start all services
+./start.sh mongodb redis        # Start specific services
+./start.sh --interactive        # Interactive selection
+./start.sh --list              # Show available services
 ```
 
-**Output includes:**
-- Container status
-- Service endpoints
-- Health check status
-
-### `stop.sh` - Stop Services
-Stops all running containers. You'll be prompted to choose whether to keep or remove volumes.
-
+### Test Services
 ```bash
-./stop.sh
+./test.sh                      # Test all services health
 ```
 
-**Options:**
-- Keep volumes (data persisted) - Default
-- Remove volumes (data deleted)
+Tests include:
+- Database connectivity (MongoDB, Redis, PostgreSQL)
+- Web UI availability (Mongo Express, Redis Insight, Adminer)
+- Storage service health (MinIO, Centrifugo)
+- Monitoring stack status (Prometheus, Grafana)
 
-### `test.sh` - Test All Services
-Tests connectivity and health of all services with detailed status report.
-
+### Stop Services
 ```bash
-./test.sh
+./stop.sh                      # Stop all (data preserved)
 ```
 
-**Tests:**
-- ✅ MongoDB connection
-- ✅ Mongo Express availability
-- ✅ Redis connection
-- ✅ Redis Insight availability
-- ✅ PostgreSQL connection
-- ✅ Adminer availability
-- ✅ MinIO health check
-- ✅ Centrifugo health check
+## 📊 Monitoring & Dashboards
 
-**Features:**
-- Container status overview
-- Service endpoint list
-- Option to view detailed logs
+Access Grafana at `http://localhost:18811` (admin / admin123)
 
-## 🌐 Service Access Examples
+**Available Dashboards:**
+- **System Overview** - CPU, Memory, Disk, Network, Container metrics
+- **MinIO Dashboard** - Storage usage, S3 operations, errors, latency
 
-### MongoDB
-```bash
-# Connect via mongodb client
-mongosh mongodb://admin:password123@localhost:27017/
+**Prometheus Targets:**
+- All database services (MongoDB, PostgreSQL, Redis)
+- Storage services (MinIO)
+- Host metrics (Node Exporter)
+- Container metrics (cAdvisor)
 
-# Or use Mongo Express Web UI
-# http://localhost:8081
-# Username: admin
-# Password: admin123
-```
-
-### Redis
-```bash
-# Connect via redis-cli
-redis-cli -p 6379 -a redis_password123
-
-# Test connection
-redis-cli ping
-
-# Or use Redis Insight Web UI
-# http://localhost:5540
-# (Redis connection is auto-configured)
-```
-
-### Redis Insight
-```bash
-# Access Web UI
-# http://localhost:5540
-#
-# Features:
-# - Visual data browser
-# - Key-value explorer
-# - Performance analysis
-# - Command execution
-```
-
-### PostgreSQL
-```bash
-# Connect via psql
-psql -h localhost -U admin -d ukritstack_db
-
-# Password: postgres_password123
-
-# Or use Adminer Web UI
-# http://localhost:8080
-# Server: postgres
-# Username: admin
-# Password: postgres_password123
-# Database: ukritstack_db
-```
-
-### Adminer
-```bash
-# Access Web UI
-# http://localhost:8080
-#
-# Features:
-# - Multi-database support (PostgreSQL, MySQL, SQLite, etc.)
-# - SQL query execution
-# - Table management
-# - Data export/import
-#
-# Default connection:
-# Server: postgres
-# Username: admin
-# Password: postgres_password123
-# Database: ukritstack_db
-```
-
-### MinIO
-```bash
-# Access Web Console
-# http://localhost:9001
-# Username: minioadmin
-# Password: minio_password123
-
-# Access API
-# http://localhost:9000
-```
-
-### Centrifugo
-```bash
-# Access Web UI and Admin Panel
-# http://localhost:8000
-
-# Features:
-# - Real-time WebSocket messaging server
-# - Pub/Sub functionality
-# - Connection management
-# - Channel subscriptions
-# - Admin API and Web interface
-
-# Configuration
-# Configuration is stored in: ./configs/centrifugo/config.json
-#
-# Example client connection (JavaScript):
-# const centrifuge = new Centrifuge('ws://localhost:8000/connection/websocket');
-# centrifuge.connect();
-#
-# For more details, visit: https://centrifugal.dev/
-```
+**Data Retention:** 30 days (configurable via `PROMETHEUS_RETENTION` in .env)
 
 ## 📊 Common Docker Commands
 
-### View container status
 ```bash
+# View status
 docker-compose ps
-```
 
-### View real-time logs
-```bash
-# All services
-docker-compose logs -f
+# View logs
+docker-compose logs -f                    # All services
+docker-compose logs -f mongodb           # Specific service
 
-# Specific service
-docker-compose logs -f mongodb
-docker-compose logs -f mongo-express
-docker-compose logs -f redis
-docker-compose logs -f redis-insight
-docker-compose logs -f postgres
-docker-compose logs -f adminer
-docker-compose logs -f minio
-docker-compose logs -f centrifugo
-```
+# Execute commands
+docker exec -it ukritstack_mongodb mongosh
+docker exec -it ukritstack_redis redis-cli
+docker exec -it ukritstack_postgres psql -U admin -d ukritstack_db
 
-### Execute commands in containers
-```bash
-# MongoDB
-docker exec -it ukritstack_mongodb mongosh --eval "db.runCommand('ping')"
-
-# Redis
-docker exec -it ukritstack_redis redis-cli ping
-
-# PostgreSQL
-docker exec -it ukritstack_postgres psql -U admin -d ukritstack_db -c "SELECT NOW();"
-
-# Centrifugo
-docker exec -it ukritstack_centrifugo centrifugo version
-```
-
-### Stop specific service
-```bash
+# Stop specific service
 docker-compose stop mongodb
-docker-compose stop redis
-docker-compose stop postgres
-docker-compose stop minio
-docker-compose stop mongo-express
-docker-compose stop centrifugo
+
+# Remove everything
+docker-compose down -v                   # ⚠️ Data will be lost!
 ```
 
-### Remove everything (containers + volumes)
-```bash
-docker-compose down -v
-```
+## 🗂️ Data Management
 
-## 🔍 Health Checks
-
-All services include health checks configured in `docker-compose.yml`. Docker automatically restarts unhealthy containers.
-
-```bash
-# View health status
-docker ps --format "table {{.Names}}\t{{.Status}}"
-```
-
-## 🗂️ Volume Management
-
-Data is persisted using **bind mounts** to local directories in `./data/`. This makes it easy to access, backup, and migrate data.
-
-### Directory Structure
+Data is stored in `./data/` using bind mounts:
 
 ```
 ./data/
-├── mongodb/
-│   ├── db/              ← MongoDB data files
-│   └── config/          ← MongoDB configuration
-├── redis/               ← Redis data files (AOF, RDB)
-├── redis-insight/       ← Redis Insight configuration
-├── postgresql/          ← PostgreSQL data files
-└── minio/               ← MinIO object storage
+├── mongodb/          # MongoDB data
+├── redis/            # Redis data (AOF, RDB)
+├── postgresql/       # PostgreSQL data
+├── minio/            # MinIO objects
+├── redis-insight/    # Redis Insight config
+├── prometheus/       # Prometheus metrics (30d retention)
+└── grafana/          # Grafana dashboards
 ```
 
-### Accessing Data Files
-
-```bash
-# View all data
-ls -la ./data
-
-# View specific service data
-ls -la ./data/mongodb
-ls -la ./data/postgresql
-ls -la ./data/redis
-ls -la ./data/minio
-```
-
-### Backup Data
+### Backup & Restore
 
 ```bash
 # Backup all data
@@ -505,124 +328,116 @@ tar -czf backup-$(date +%Y%m%d-%H%M%S).tar.gz ./data
 
 # Backup specific service
 tar -czf mongodb-backup-$(date +%Y%m%d).tar.gz ./data/mongodb
-```
 
-### Restore Data
-
-```bash
 # Restore from backup
 tar -xzf backup-TIMESTAMP.tar.gz
-```
-
-### Clean Data
-
-```bash
-# Remove all data (CAUTION: Data will be lost!)
-rm -rf ./data
-
-# Remove specific service data
-rm -rf ./data/mongodb
-rm -rf ./data/postgresql
 ```
 
 ## ⚠️ Troubleshooting
 
 ### Services won't start
+
 ```bash
-# Check if ports are already in use
-lsof -i :27017  # MongoDB
-lsof -i :8081   # Mongo Express
-lsof -i :6379   # Redis
-lsof -i :5540   # Redis Insight
-lsof -i :5432   # PostgreSQL
-lsof -i :8080   # Adminer
-lsof -i :9000   # MinIO API
-lsof -i :9001   # MinIO Console
-lsof -i :8000   # Centrifugo
+# Check port conflicts
+lsof -i :18801-18817
 
 # View error logs
 docker-compose logs <service-name>
+
+# Check container status
+docker-compose ps
 ```
 
 ### Can't connect to service
+
 1. Verify service is running: `docker-compose ps`
-2. Check if port is correct in .env
+2. Check port in `.env` file
 3. Verify credentials
-4. Test from within container:
-```bash
-docker exec -it ukritstack_mongodb mongosh --eval "db.runCommand('ping')"
-```
+4. Test from container: `docker exec -it ukritstack_<service> <test-command>`
 
 ### Out of disk space
+
 ```bash
-# Remove unused Docker resources
+# Clean Docker resources
 docker system prune
 
-# Remove all volumes (WARNING: data loss)
-docker volume prune
+# Check data directory size
+du -sh ./data/*
+
+# Remove old Prometheus data
+rm -rf ./data/prometheus/*
 ```
 
 ### Service keeps restarting
+
 ```bash
-# Check service logs
-docker-compose logs --tail=50 <service-name>
+# Check detailed logs
+docker-compose logs --tail=100 <service-name>
 
 # Inspect container
 docker inspect ukritstack_<service-name>
+
+# Check resource usage
+docker stats
 ```
 
-## 🔐 Security Notes
+## 🔐 Security Best Practices
 
-⚠️ **IMPORTANT:** The default credentials in `.env` are for development only.
+⚠️ **Default credentials are for DEVELOPMENT only!**
 
 For production:
-1. Change all passwords in `.env`
-2. Use environment-specific `.env` files
-3. Don't commit `.env` to version control
-4. Use Docker secrets or container orchestration (K8s) for secrets management
-5. Restrict network access to containers
-6. Use strong, unique passwords
 
-### Example production setup
-```bash
-# Create .env.production
-cp .env .env.production
-
-# Edit with secure values
-nano .env.production
-
-# Use specific env file
-docker-compose --env-file .env.production up -d
-```
+1. **Change all passwords** in `.env`
+2. **Use environment-specific configs**:
+   ```bash
+   cp .env .env.production
+   nano .env.production
+   docker-compose --env-file .env.production up -d
+   ```
+3. **Don't commit `.env`** to version control
+4. **Use Docker secrets** or orchestration tools (Kubernetes)
+5. **Restrict network access** to containers
+6. **Enable SSL/TLS** for all services
+7. **Regular security updates** for Docker images
 
 ## 📁 Project Structure
 
 ```
 .
-├── docker-compose.yml    # Docker Compose configuration
-├── .env                  # Environment variables
-├── start.sh             # Start services script
-├── stop.sh              # Stop services script
-├── test.sh              # Test services script
-└── README.md            # This file
+├── configs/
+│   ├── monitoring/
+│   │   ├── prometheus.yml           # Prometheus config
+│   │   └── grafana/provisioning/    # Grafana dashboards
+│   └── centrifugo/
+│       └── config.json              # Centrifugo config
+├── data/                            # Persistent data (bind mounts)
+├── docker-compose.yml               # Service definitions
+├── .env                             # Environment variables
+├── start.sh                         # Start services
+├── stop.sh                          # Stop services
+├── test.sh                          # Test services
+├── init-data-dirs.sh               # Initialize data directories
+└── README.md                        # This file
 ```
 
-## 📚 Additional Resources
+## 🔗 Service Documentation
 
-- [Docker Documentation](https://docs.docker.com/)
-- [Docker Compose Documentation](https://docs.docker.com/compose/)
-- [MongoDB Documentation](https://docs.mongodb.com/)
-- [Redis Documentation](https://redis.io/documentation)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
-- [MinIO Documentation](https://docs.min.io/)
-- [Centrifugo Documentation](https://centrifugal.dev/)
-- [Mongo Express Documentation](https://github.com/mongo-express/mongo-express)
-- [Prometheus Documentation](https://prometheus.io/docs/)
-- [Grafana Documentation](https://grafana.com/docs/)
+- [Docker Compose](https://docs.docker.com/compose/)
+- [MongoDB](https://docs.mongodb.com/)
+- [Redis](https://redis.io/documentation)
+- [PostgreSQL](https://www.postgresql.org/docs/)
+- [MinIO](https://docs.min.io/)
+- [Centrifugo](https://centrifugal.dev/)
+- [Prometheus](https://prometheus.io/docs/)
+- [Grafana](https://grafana.com/docs/)
 
 ## 🤝 Contributing
 
-Feel free to modify configurations and scripts to suit your needs.
+Contributions are welcome! Feel free to:
+- Report issues
+- Suggest improvements
+- Submit pull requests
+- Share your custom configurations
 
 ## 📝 License
 
@@ -630,6 +445,6 @@ This project is provided as-is for development purposes.
 
 ---
 
+**Version:** 1.0.0
 **Last Updated:** 2025-12-08
-
 **Happy Coding!** 🎉
